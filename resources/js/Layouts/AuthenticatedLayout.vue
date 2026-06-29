@@ -29,7 +29,7 @@ const navigationItems = [
     },
     {
         label: "Warehouses",
-        href: "#",
+        href: "/warehouses",
         activePattern: "/warehouses",
     },
     {

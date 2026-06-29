@@ -45,7 +45,7 @@ const clearFilter = () => {
 };
 
 const deleteProduct = (product) => {
-    if (!confirm(`Delete product ${product.name}`)) {
+    if (!confirm(`Delete product "${product.name}"?`)) {
         return;
     }
 

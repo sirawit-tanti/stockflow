@@ -4,7 +4,7 @@ import { Head, Link, router } from "@inertiajs/vue3";
 import { ref } from "vue";
 
 const props = defineProps({
-    suppliers: {
+    warehouses: {
         type: Object,
         required: true,
     },
@@ -20,7 +20,7 @@ const search = ref(props.filters.search ?? "");
 
 const submitSearch = () => {
     router.get(
-        "/suppliers",
+        "/warehouses",
         {
             search: search.value,
         },
@@ -33,20 +33,21 @@ const submitSearch = () => {
 
 const clearSearch = () => {
     search.value = "";
-    router.get("/suppliers");
+    router.get("/warehouses");
 };
 
-const deleteSupplier = (supplier) => {
-    if (!confirm(`Delete supplier "${supplier.name}"?`)) {
+const deleteWarehouse = (warehouse) => {
+    if (!confirm(`Delete warehouse "${warehouse.name}"?`)) {
         return;
     }
 
-    router.delete(`/suppliers/${supplier.id}`);
+    router.delete(`warehouses/${warehouse.id}`);
 };
 </script>
 
 <template>
-    <Head title="Suppliers" />
+    <Head title="Warehouses" />
+
     <AuthenticatedLayout>
         <div class="space-y-6">
             <section
@@ -62,19 +63,20 @@ const deleteSupplier = (supplier) => {
                     <h1
                         class="mt-2 text-2xl font-bold tracking-tight text-slate-950"
                     >
-                        Suppliers
+                        Warehouses
                     </h1>
 
                     <p class="mt-2 text-sm text-slate-500">
-                        Manage supplier master data for purchase orders.
+                        Manage warehouse master data for inventory stock
+                        locations.
                     </p>
                 </div>
 
                 <Link
-                    href="/suppliers/create"
+                    href="/warehouses/create"
                     class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
-                    Add Supplier
+                    Add Warehouse
                 </Link>
             </section>
 
@@ -88,7 +90,7 @@ const deleteSupplier = (supplier) => {
                     <input
                         v-model="search"
                         type="text"
-                        placeholder="Search supplier code, name, contact, phone, or email..."
+                        placeholder="Search warehouse code, name, or location..."
                         class="w-full rounded-xl border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     />
 
@@ -126,22 +128,12 @@ const deleteSupplier = (supplier) => {
                                 <th
                                     class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
                                 >
-                                    Supplier
+                                    Warehouse
                                 </th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
                                 >
-                                    Contact
-                                </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
-                                >
-                                    Phone
-                                </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
-                                >
-                                    Email
+                                    Location
                                 </th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
@@ -158,59 +150,37 @@ const deleteSupplier = (supplier) => {
 
                         <tbody class="divide-y divide-slate-200 bg-white">
                             <tr
-                                v-for="supplier in suppliers.data"
-                                :key="supplier.id"
+                                v-for="warehouse in warehouses.data"
+                                :key="warehouse.id"
                                 class="hover:bg-slate-50"
                             >
                                 <td
                                     class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-slate-950"
                                 >
-                                    {{ supplier.code || "-" }}
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    <div
-                                        class="text-sm font-semibold text-slate-950"
-                                    >
-                                        {{ supplier.name }}
-                                    </div>
-
-                                    <div
-                                        class="mt-1 max-w-md truncate text-sm text-slate-500"
-                                    >
-                                        {{ supplier.address || "-" }}
-                                    </div>
+                                    {{ warehouse.code }}
                                 </td>
 
                                 <td
-                                    class="whitespace-nowrap px-6 py-4 text-sm text-slate-600"
+                                    class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-slate-950"
                                 >
-                                    {{ supplier.contact_name || "-" }}
+                                    {{ warehouse.name }}
                                 </td>
 
-                                <td
-                                    class="whitespace-nowrap px-6 py-4 text-sm text-slate-600"
-                                >
-                                    {{ supplier.phone || "-" }}
-                                </td>
-
-                                <td
-                                    class="whitespace-nowrap px-6 py-4 text-sm text-slate-600"
-                                >
-                                    {{ supplier.email || "-" }}
+                                <td class="px-6 py-4 text-sm text-slate-600">
+                                    {{ warehouse.location || "-" }}
                                 </td>
 
                                 <td class="whitespace-nowrap px-6 py-4">
                                     <span
                                         class="rounded-full px-2.5 py-1 text-xs font-semibold"
                                         :class="
-                                            supplier.is_active
+                                            warehouse.is_active
                                                 ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
                                                 : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'
                                         "
                                     >
                                         {{
-                                            supplier.is_active
+                                            warehouse.is_active
                                                 ? "Active"
                                                 : "Inactive"
                                         }}
@@ -222,7 +192,7 @@ const deleteSupplier = (supplier) => {
                                 >
                                     <div class="flex justify-end gap-2">
                                         <Link
-                                            :href="`/suppliers/${supplier.id}/edit`"
+                                            :href="`/warehouses/${warehouse.id}/edit`"
                                             class="rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-50"
                                         >
                                             Edit
@@ -231,7 +201,7 @@ const deleteSupplier = (supplier) => {
                                         <button
                                             type="button"
                                             class="rounded-lg border border-red-200 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-50"
-                                            @click="deleteSupplier(supplier)"
+                                            @click="deleteWarehouse(warehouse)"
                                         >
                                             Delete
                                         </button>
@@ -239,12 +209,12 @@ const deleteSupplier = (supplier) => {
                                 </td>
                             </tr>
 
-                            <tr v-if="suppliers.data.length === 0">
+                            <tr v-if="warehouses.data.length === 0">
                                 <td
-                                    colspan="7"
+                                    colspan="5"
                                     class="px-6 py-10 text-center text-sm text-slate-500"
                                 >
-                                    No suppliers found.
+                                    No warehouses found.
                                 </td>
                             </tr>
                         </tbody>
@@ -252,22 +222,22 @@ const deleteSupplier = (supplier) => {
                 </div>
 
                 <div
-                    v-if="suppliers.links.length > 3"
+                    v-if="warehouses.links.length > 3"
                     class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4"
                 >
                     <div class="text-sm text-slate-500">
                         Showing
-                        <span class="font-medium">{{ suppliers.from }}</span>
+                        <span class="font-medium">{{ warehouses.from }}</span>
                         to
-                        <span class="font-medium">{{ suppliers.to }}</span>
+                        <span class="font-medium">{{ warehouses.to }}</span>
                         of
-                        <span class="font-medium">{{ suppliers.total }}</span>
+                        <span class="font-medium">{{ warehouses.total }}</span>
                         results
                     </div>
 
                     <div class="flex flex-wrap gap-1">
                         <Link
-                            v-for="link in suppliers.links"
+                            v-for="link in warehouses.links"
                             :key="link.label"
                             :href="link.url || '#'"
                             class="rounded-lg px-3 py-1.5 text-sm"
