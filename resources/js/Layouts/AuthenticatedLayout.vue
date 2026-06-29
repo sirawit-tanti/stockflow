@@ -24,7 +24,7 @@ const navigationItems = [
     },
     {
         label: "Suppliers",
-        href: "#",
+        href: "/suppliers",
         activePattern: "/suppliers",
     },
     {
