@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -31,5 +32,10 @@ class Product extends Model
     public function category() : BelongsTo
     {
         return $this->belongsTo(ProductCategory::class, 'product_category_id');
+    }
+
+    public function warehouseStocks(): HasMany
+    {
+        return $this->hasMany(WarehouseStock::class);
     }
 }

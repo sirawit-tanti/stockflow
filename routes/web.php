@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\WarehouseStockController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,6 +28,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class);
     Route::resource('suppliers', SupplierController::class);
     Route::resource('warehouses', WarehouseController::class);
+
+    Route::get('warehouse-stocks', [WarehouseStockController::class, 'index'])->name('warehouse-stocks.index');
+
+    Route::post('warehouse-stocks/sync', [WarehouseStockController::class, 'sync'])->name('warehouse-stocks.sync');
 });
 
 Route::middleware('auth')->group(function () {

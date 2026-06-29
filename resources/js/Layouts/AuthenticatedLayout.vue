@@ -33,6 +33,11 @@ const navigationItems = [
         activePattern: "/warehouses",
     },
     {
+        label: "Stock Balance",
+        href: "/warehouse-stocks",
+        activePattern: "/warehouse-stocks",
+    },
+    {
         label: "Purchase Orders",
         href: "#",
         activePattern: "/purchase-orders",

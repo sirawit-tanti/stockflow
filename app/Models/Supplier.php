@@ -19,7 +19,7 @@ class Supplier extends Model
         'is_active',
     ];
 
-    public function casts() : array
+    protected function casts() : array
     {
         return [
             'is_active' => 'boolean'

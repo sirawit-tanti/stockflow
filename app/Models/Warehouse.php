@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Warehouse extends Model
@@ -16,10 +17,15 @@ class Warehouse extends Model
         'is_active',
     ];
 
-    public function casts(): array
+    protected function casts(): array
     {
         return [
             'is_active' => 'boolean'
         ];
+    }
+
+    public function warehouseStocks(): HasMany
+    {
+        return $this->hasMany(WarehouseStock::class);
     }
 }
