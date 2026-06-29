@@ -19,7 +19,7 @@ const navigationItems = [
     },
     {
         label: "Products",
-        href: "#",
+        href: "/products",
         activePattern: "/products",
     },
     {
