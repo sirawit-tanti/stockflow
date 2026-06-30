@@ -46,6 +46,14 @@ class PurchaseOrderService
             ]);
 
             $purchaseOrder->items()->delete();
+
+            $totalAmount = $this->syncItems($purchaseOrder, $data['items']);
+
+            $purchaseOrder->update([
+                'total_amount' => $totalAmount,
+            ]);
+
+            return $purchaseOrder->load(['supplier', 'items.product']);
         });
     }
 

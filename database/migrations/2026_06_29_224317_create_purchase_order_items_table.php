@@ -18,7 +18,7 @@ return new class extends Migration
                 ->constrained('purchase_orders')
                 ->cascadeOnDelete();
             
-            $table->foreignId('prouct_id')
+            $table->foreignId('product_id')
                 ->constrained('products')
                 ->restrictOnDelete();
 

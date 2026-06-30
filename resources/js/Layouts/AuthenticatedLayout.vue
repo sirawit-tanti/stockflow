@@ -39,7 +39,7 @@ const navigationItems = [
     },
     {
         label: "Purchase Orders",
-        href: "#",
+        href: "/purchase-orders",
         activePattern: "/purchase-orders",
     },
     {
