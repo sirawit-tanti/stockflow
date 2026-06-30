@@ -44,7 +44,7 @@ const navigationItems = [
     },
     {
         label: "Stock Receipts",
-        href: "#",
+        href: "/stock-receipts",
         activePattern: "/stock-receipts",
     },
     {
