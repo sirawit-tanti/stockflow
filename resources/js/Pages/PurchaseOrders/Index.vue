@@ -101,6 +101,34 @@ const statusClass = (value) => {
 
     return "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200";
 };
+
+const submitPurchaseOrder = (purchaseOrder) => {
+    if (
+        !confirm(
+            `Submit purchase order "${purchaseOrder.po_number}" for approval?`,
+        )
+    ) {
+        return;
+    }
+
+    router.post(`/purchase-orders/${purchaseOrder.id}/submit`);
+};
+
+const approvePurchaseOrder = (purchaseOrder) => {
+    if (!confirm(`Approve purchase order "${purchaseOrder.po_number}"?`)) {
+        return;
+    }
+
+    router.post(`/purchase-orders/${purchaseOrder.id}/approve`);
+};
+
+const rejectPurchaseOrder = (purchaseOrder) => {
+    if (!confirm(`Reject purchase order "${purchaseOrder.po_number}"?`)) {
+        return;
+    }
+
+    router.post(`/purchase-orders/${purchaseOrder.id}/reject`);
+};
 </script>
 
 <template>
@@ -332,6 +360,53 @@ const statusClass = (value) => {
                                         >
                                             Edit
                                         </Link>
+
+                                        <button
+                                            v-if="
+                                                purchaseOrder.status === 'DRAFT'
+                                            "
+                                            type="button"
+                                            class="rounded-lg border border-indigo-200 px-3 py-1.5 font-medium text-indigo-700 transition hover:bg-indigo-50"
+                                            @click="
+                                                submitPurchaseOrder(
+                                                    purchaseOrder,
+                                                )
+                                            "
+                                        >
+                                            Submit
+                                        </button>
+
+                                        <button
+                                            v-if="
+                                                purchaseOrder.status ===
+                                                'PENDING_APPROVAL'
+                                            "
+                                            type="button"
+                                            class="rounded-lg border border-emerald-200 px-3 py-1.5 font-medium text-emerald-700 transition hover:bg-emerald-50"
+                                            @click="
+                                                approvePurchaseOrder(
+                                                    purchaseOrder,
+                                                )
+                                            "
+                                        >
+                                            Approve
+                                        </button>
+
+                                        <button
+                                            v-if="
+                                                purchaseOrder.status ===
+                                                'PENDING_APPROVAL'
+                                            "
+                                            type="button"
+                                            class="rounded-lg border border-red-200 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-50"
+                                            @click="
+                                                rejectPurchaseOrder(
+                                                    purchaseOrder,
+                                                )
+                                            "
+                                        >
+                                            Reject
+                                        </button>
 
                                         <button
                                             v-if="

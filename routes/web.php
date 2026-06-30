@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PurchaseOrderActionController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WarehouseController;
@@ -29,6 +30,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class);
     Route::resource('suppliers', SupplierController::class);
     Route::resource('warehouses', WarehouseController::class);
+
+    Route::post('purchase-orders/{purchaseOrder}/submit', [PurchaseOrderActionController::class, 'submit'])->name('purchase-orders.submit');
+    Route::post('purchase-orders/{purchaseOrder}/approve', [PurchaseOrderActionController::class, 'approve'])->name('purchase-orders.approve');
+    Route::post('purchase-orders/{purchaseOrder}/reject', [PurchaseOrderActionController::class, 'reject'])->name('purchase-orders.reject');
+    Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderActionController::class, 'cancel'])->name('purchase-orders.cancel');
+
     Route::resource('purchase-orders', PurchaseOrderController::class);
 
     Route::get('warehouse-stocks', [WarehouseStockController::class, 'index'])->name('warehouse-stocks.index');

@@ -67,6 +67,78 @@ class PurchaseOrderService
         });
     }
 
+    public function submitDraft(PurchaseOrder $purchaseOrder): PurchaseOrder
+    {
+        $this->ensureDraft($purchaseOrder);
+
+        return DB::transaction(function () use ($purchaseOrder) {
+            if ($purchaseOrder->items()->count() === 0) {
+                throw ValidationException::withMessages([
+                    'purchase_order' => 'Purchase order must have at least one item before submit.'
+                ]);
+            }
+
+            $purchaseOrder->update([
+                'status' => PurchaseOrderStatus::PENDING_APPROVAL,
+                'submitted_at' => now(),
+            ]);
+
+            return $purchaseOrder->refresh();
+        });
+    }
+
+    public function approve(PurchaseOrder $purchaseOrder, int $userId): PurchaseOrder
+    {
+        $this->ensurePendingApproval($purchaseOrder);
+
+        return DB::transaction(function () use ($purchaseOrder, $userId) {
+            $purchaseOrder->update([
+                'status' => PurchaseOrderStatus::APPROVED,
+                'approved_by' => $userId,
+                'approved_at' => now(),
+                'rejected_at' => null,
+            ]);
+
+            return $purchaseOrder->refresh();
+        });
+    }
+
+    public function reject(PurchaseOrder $purchaseOrder): PurchaseOrder
+    {
+        $this->ensurePendingApproval($purchaseOrder);
+
+        return DB::transaction(function () use ($purchaseOrder) {
+            $purchaseOrder->update([
+                'status' => PurchaseOrderStatus::REJECTED,
+                'approved_by' => null,
+                'approved_at' => null,
+                'rejected_at' => now(),
+            ]);
+
+            return $purchaseOrder->refresh();
+        });
+    }
+
+    public function cancel(PurchaseOrder $purchaseOrder): PurchaseOrder
+    {
+        if (!in_array($purchaseOrder->status, [
+            PurchaseOrderStatus::DRAFT,
+            PurchaseOrderStatus::PENDING_APPROVAL,
+        ], true)) {
+            throw ValidationException::withMessages([
+                'purchase_order' => 'Only draft or pending approval purchase orders can be cancelled.'
+            ]);
+        }
+
+        return DB::transaction(function () use ($purchaseOrder) {
+            $purchaseOrder->update([
+                'status' => PurchaseOrderStatus::CANCELLED,
+            ]);
+
+            return $purchaseOrder->refresh();
+        });
+    }
+
     private function syncItems(PurchaseOrder $purchaseOrder, array $items): float
     {
         $totalAmount = 0;
@@ -114,7 +186,16 @@ class PurchaseOrderService
     {
         if ($purchaseOrder->status !== PurchaseOrderStatus::DRAFT) {
             throw ValidationException::withMessages([
-                'status' => 'Only draft purchase orders can be modified.'
+                'purchase_order' => 'Only draft purchase orders can be modified.'
+            ]);
+        }
+    }
+
+    private function ensurePendingApproval(PurchaseOrder $purchaseOrder): void
+    {
+        if ($purchaseOrder->status !== PurchaseOrderStatus::PENDING_APPROVAL) {
+            throw ValidationException::withMessages([
+                'purchase_order' => 'Only pending approval purchase order can be approved or rejected.'
             ]);
         }
     }

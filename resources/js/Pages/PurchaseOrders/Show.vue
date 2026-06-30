@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
 
 defineProps({
     purchaseOrder: {
@@ -33,6 +33,20 @@ const formatDate = (value) => {
     });
 };
 
+const formatDateTime = (value) => {
+    if (!value) {
+        return "-";
+    }
+
+    return new Date(value).toLocaleDateString("th-TH", {
+        timeZone: "Asia/Bangkok",
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+};
 const statusClass = (value) => {
     if (value === "DRAFT") {
         return "bg-slate-100 text-slate-700 ring-1 ring-slate-200";
@@ -51,6 +65,79 @@ const statusClass = (value) => {
     }
 
     return "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200";
+};
+
+const submitPurchaseOrder = (purchaseOrder) => {
+    if (
+        !confirm(
+            `Submit purchase order "${purchaseOrder.po_number}" for approval?`,
+        )
+    ) {
+        return;
+    }
+
+    router.post(`/purchase-orders/${purchaseOrder.id}/submit`);
+};
+
+const approvePurchaseOrder = (purchaseOrder) => {
+    if (!confirm(`Approve purchase order "${purchaseOrder.po_number}"?`)) {
+        return;
+    }
+
+    router.post(`/purchase-orders/${purchaseOrder.id}/approve`);
+};
+
+const rejectPurchaseOrder = (purchaseOrder) => {
+    if (!confirm(`Reject purchase order "${purchaseOrder.po_number}"?`)) {
+        return;
+    }
+
+    router.post(`/purchase-orders/${purchaseOrder.id}/reject`);
+};
+
+const cancelPurchaseOrder = (purchaseOrder) => {
+    if (!confirm(`Cancel purchase order "${purchaseOrder.po_number}"?`)) {
+        return;
+    }
+
+    router.post(`/purchase-orders/${purchaseOrder.id}/cancel`);
+};
+
+const workflowSteps = (purchaseOrder) => {
+    return [
+        {
+            label: "Draft",
+            active: true,
+            completed: true,
+        },
+        {
+            label: "Pending Approval",
+            active: purchaseOrder.status === "PENDING_APPROVAL",
+            completed: [
+                "PENDING_APPROVAL",
+                "APPROVED",
+                "REJECTED",
+                "PARTIALLY_RECEIVED",
+                "COMPLETED",
+            ].includes(purchaseOrder.status),
+        },
+        {
+            label: "Approved",
+            active: purchaseOrder.status === "APPROVED",
+            completed: ["APPROVED", "PARTIALLY_RECEIVED", "COMPLETED"].includes(
+                purchaseOrder.status,
+            ),
+        },
+        {
+            label: "Receive Stock",
+            active: ["PARTIALLY_RECEIVED", "COMPLETED"].includes(
+                purchaseOrder.status,
+            ),
+            completed: ["PARTIALLY_RECEIVED", "COMPLETED"].includes(
+                purchaseOrder.status,
+            ),
+        },
+    ];
 };
 </script>
 
@@ -107,6 +194,95 @@ const statusClass = (value) => {
                     >
                         Edit Draft
                     </Link>
+
+                    <button
+                        v-if="purchaseOrder.status === 'DRAFT'"
+                        type="button"
+                        class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500"
+                        @click="submitPurchaseOrder(purchaseOrder)"
+                    >
+                        Submit for Approval
+                    </button>
+
+                    <button
+                        v-if="purchaseOrder.status === 'PENDING_APPROVAL'"
+                        type="button"
+                        class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                        @click="approvePurchaseOrder(purchaseOrder)"
+                    >
+                        Approve
+                    </button>
+
+                    <button
+                        v-if="purchaseOrder.status === 'PENDING_APPROVAL'"
+                        type="button"
+                        class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500"
+                        @click="rejectPurchaseOrder(purchaseOrder)"
+                    >
+                        Reject
+                    </button>
+
+                    <button
+                        v-if="
+                            ['DRAFT', 'PENDING_APPROVAL'].includes(
+                                purchaseOrder.status,
+                            )
+                        "
+                        type="button"
+                        class="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                        @click="cancelPurchaseOrder(purchaseOrder)"
+                    >
+                        Cancel PO
+                    </button>
+                </div>
+            </section>
+
+            <section
+                class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"
+            >
+                <h2 class="text-lg font-semibold text-slate-950">
+                    Workflow Status
+                </h2>
+
+                <div class="mt-5 grid gap-3 md:grid-cols-4">
+                    <div
+                        v-for="step in workflowSteps(purchaseOrder)"
+                        :key="step.label"
+                        class="rounded-xl border p-4"
+                        :class="
+                            step.completed
+                                ? 'border-emerald-200 bg-emerald-50'
+                                : 'border-slate-200 bg-slate-50'
+                        "
+                    >
+                        <div
+                            class="text-sm font-semibold"
+                            :class="
+                                step.completed
+                                    ? 'text-emerald-800'
+                                    : 'text-slate-500'
+                            "
+                        >
+                            {{ step.label }}
+                        </div>
+
+                        <div
+                            class="mt-1 text-xs"
+                            :class="
+                                step.active
+                                    ? 'text-slate-950'
+                                    : 'text-slate-500'
+                            "
+                        >
+                            {{
+                                step.active
+                                    ? "Current step"
+                                    : step.completed
+                                      ? "Completed"
+                                      : "Waiting"
+                            }}
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -184,6 +360,27 @@ const statusClass = (value) => {
                             class="mt-1 rounded-xl bg-slate-50 p-4 text-sm text-slate-700"
                         >
                             {{ purchaseOrder.note || "-" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt class="text-sm text-slate-500">Submitted At</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-950">
+                            {{ formatDateTime(purchaseOrder.submitted_at) }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt class="text-sm text-slate-500">Approved At</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-950">
+                            {{ formatDateTime(purchaseOrder.approved_at) }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt class="text-sm text-slate-500">Rejected At</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-950">
+                            {{ formatDateTime(purchaseOrder.rejected_at) }}
                         </dd>
                     </div>
                 </div>
