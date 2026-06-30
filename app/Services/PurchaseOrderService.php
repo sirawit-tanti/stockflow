@@ -92,14 +92,22 @@ class PurchaseOrderService
 
     private function generatePoNumber(): string
     {
-        $prefix = 'PO-'.now()->format('Ymd');
+        $prefix = 'PO-' . now()->format('Ymd');
 
-        $runningNumber = PurchaseOrder::query()
-            ->where('po_number', 'like', "{$prefix}-")
+        $lastPoNumber = PurchaseOrder::withTrashed()
+            ->where('po_number', 'like', "{$prefix}-%")
             ->lockForUpdate()
-            ->count() + 1;
-        
-        return $prefix.'-'.str_pad((string) $runningNumber, 4, '0', STR_PAD_LEFT);
+            ->orderByDesc('po_number')
+            ->value('po_number');
+
+        if (!$lastPoNumber) {
+            return "{$prefix}-0001";
+        }
+
+        $lastRunningNumber = (int) substr($lastPoNumber, -4);
+        $nextRunningNumber = $lastRunningNumber + 1;
+
+        return $prefix . '-' . str_pad((string) $nextRunningNumber, 4, '0', STR_PAD_LEFT);
     }
 
     private function ensureDraft(PurchaseOrder $purchaseOrder): void
