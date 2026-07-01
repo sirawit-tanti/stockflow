@@ -188,6 +188,14 @@ const workflowSteps = (purchaseOrder) => {
                     </Link>
 
                     <Link
+                        v-if="['APPROVED', 'PARTIALLY_RECEIVED'].includes(purchaseOrder.status)"
+                        :href="`/purchase-orders/${purchaseOrder.id}/receive`"
+                        class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                    >
+                        Receive Stock
+                    </Link>
+
+                    <Link
                         v-if="purchaseOrder.status === 'DRAFT'"
                         :href="`/purchase-orders/${purchaseOrder.id}/edit`"
                         class="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"

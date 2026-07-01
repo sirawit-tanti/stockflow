@@ -19,7 +19,7 @@ class StoreStockReceiptRequest extends FormRequest
             'note' => 'nullable|string',
 
             'items' => 'required|array|min:1',
-            'items.*.purchase_order_item_id' => 'required|integer|exists:purchase_order_item_id',
+            'items.*.purchase_order_item_id' => 'required|integer|exists:purchase_order_items,id',
             'items.*.quantity' => 'required|numeric|min:0',
         ];
     }
@@ -30,6 +30,7 @@ class StoreStockReceiptRequest extends FormRequest
             'warehouse_id.required' => 'Please select warehouse.',
             'received_at.required' => 'Please select received date and time.',
             'items.required' => 'Please provide received items.',
+            'items.*.purchase_order_item_id.required' => 'Invalid purchase order item.',
             'items.*.quantity.required' => 'Please enter received quantity.',
             'items.*.quantity.min' => 'Received quantity cannot be negative.',
         ];

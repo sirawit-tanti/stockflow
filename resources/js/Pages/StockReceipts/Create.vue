@@ -15,7 +15,7 @@ const props = defineProps({
 });
 
 const now = new Date();
-now.setMinutes(now.getMinutes() - now().getTimezoneOffset());
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 const currentDateTime = now.toISOString().slice(0, 16);
 
 const getRemainingQuantity = (item) => {
@@ -29,11 +29,11 @@ const form = useForm({
     items: props.purchaseOrder.items.map((item) => ({
         purchase_order_item_id: item.id,
         quantity: getRemainingQuantity(item),
-    }));
+    })),
 });
 
-const reveivableItems = computed(() => {
-    return props.purchaseOrder.items.filter((item) => getRemainingQuantity(item) > 0)
+const receivableItems = computed(() => {
+    return props.purchaseOrder.items.filter((item) => getRemainingQuantity(item) > 0);
 });
 
 const submit = () => {

@@ -54,7 +54,7 @@ class StockReceiptController extends Controller
         
         return Inertia::render('StockReceipts/Create', [
             'purchaseOrder' => $purchaseOrder,
-            'warehouse' => $warehouses,
+            'warehouses' => $warehouses,
         ]);
     }
 
