@@ -49,7 +49,7 @@ const navigationItems = [
     },
     {
         label: "Stock Movements",
-        href: "#",
+        href: "/stock-movements",
         activePattern: "/stock-movements",
     },
     {

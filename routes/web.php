@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseOrderActionController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\StockReceiptController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WarehouseController;
@@ -41,7 +42,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('purchase-orders/{purchaseOrder}/receive', [StockReceiptController::class, 'create'])->name('purchase-orders.receive.create');
     Route::post('purchase-orders/{purchaseOrder}/receive', [StockReceiptController::class, 'store'])->name('purchase-orders.receive.store');
     Route::resource('purchase-orders', PurchaseOrderController::class);
-
+    Route::get('stock-movements', [StockMovementController::class, 'index'])->name('stock-movements.index');
+    Route::get('stock-movements/{stockMovement}', [StockMovementController::class, 'show'])->name('stock-movements.show');
     Route::get('warehouse-stocks', [WarehouseStockController::class, 'index'])->name('warehouse-stocks.index');
 
     Route::post('warehouse-stocks/sync', [WarehouseStockController::class, 'sync'])->name('warehouse-stocks.sync');
