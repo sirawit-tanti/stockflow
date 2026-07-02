@@ -53,6 +53,11 @@ const navigationItems = [
         activePattern: "/stock-movements",
     },
     {
+        label: "Stock Adjustments",
+        href: "/stock-adjustments",
+        activePattern: "/stock-adjustments",
+    },
+    {
         label: "Reports",
         href: "#",
         activePattern: "/reports",

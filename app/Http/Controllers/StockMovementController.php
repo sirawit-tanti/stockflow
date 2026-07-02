@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\StockMovementType;
 use App\Models\Product;
+use App\Models\StockAdjustment;
 use App\Models\StockMovement;
 use App\Models\StockReceipt;
 use App\Models\Warehouse;
@@ -71,6 +72,7 @@ class StockMovementController extends Controller
         ]);
 
         $referenceReceipt = null;
+        $referenceAdjustment = null;
 
         if ($stockMovement->reference_type === StockReceipt::class) {
             $referenceReceipt = StockReceipt::query()
@@ -78,10 +80,17 @@ class StockMovementController extends Controller
                 ->find($stockMovement->reference_id);
         }
 
+        if ($stockMovement->reference_type === StockAdjustment::class) {
+            $referenceAdjustment = StockAdjustment::query()
+                ->with(['warehouse', 'adjuster'])
+                ->find($stockMovement->reference_id);
+        }
+
         return Inertia::render('StockMovements/Show', [
             'stockMovement' => $stockMovement,
             'movementTypes' => StockMovementType::labels(),
             'referenceReceipt' => $referenceReceipt,
+            'referenceAdjustment' => $referenceAdjustment,
         ]);
     }
 }

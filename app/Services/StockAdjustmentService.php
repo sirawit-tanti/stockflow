@@ -55,7 +55,7 @@ class StockAdjustmentService
             return $stockAdjustment->load([
                 'warehouse',
                 'adjuster',
-                'item.product.category',
+                'items.product.category',
             ]);
         });
     }
