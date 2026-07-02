@@ -49,6 +49,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('stock-balances/export', [ReportController::class, 'exportStockBalances'])
                 ->name('stock-balances.export')
                 ->middleware('permission:report.export');
+
+            Route::get('stock-movements', [ReportController::class, 'stockMovements'])
+                ->name('stock-movements');
+
+            Route::get('stock-movements/export', [ReportController::class, 'exportStockMovements'])
+                ->name('stock-movements.export')
+                ->middleware('permission:report.export');
         });
 
     Route::get('users', [UserManagementController::class, 'index'])

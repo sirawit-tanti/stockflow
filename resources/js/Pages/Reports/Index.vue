@@ -98,9 +98,6 @@ defineProps({
                     </div>
                 </Link>
 
-                <!-- <div
-                    class="rounded-2xl bg-white p-6 opacity-60 shadow-sm ring-1 ring-slate-200"
-                > -->
                 <Link
                     href="/reports/stock-balances"
                     class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
@@ -124,14 +121,12 @@ defineProps({
                         Open Report →
                     </div>
                 </Link>
-                <!-- </div> -->
 
-                <div
-                    class="rounded-2xl bg-white p-6 opacity-60 shadow-sm ring-1 ring-slate-200"
+                <Link
+                    href="/reports/stock-movements"
+                    class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
                 >
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-sm font-black text-amber-600"
-                    >
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-sm font-black text-amber-600">
                         MV
                     </div>
 
@@ -140,14 +135,13 @@ defineProps({
                     </h2>
 
                     <p class="mt-2 text-sm leading-6 text-slate-500">
-                        Coming next: movement history report with receive and
-                        adjustment data.
+                        View stock movement history from receiving and stock adjustments. Export results as CSV.
                     </p>
 
-                    <div class="mt-5 text-sm font-semibold text-slate-400">
-                        Next step
+                    <div class="mt-5 text-sm font-semibold text-amber-600">
+                        Open Report →
                     </div>
-                </div>
+                </Link>
             </section>
         </div>
     </AuthenticatedLayout>

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PurchaseOrderStatus;
+use App\Enums\StockMovementType;
 use App\Models\PurchaseOrder;
+use App\Models\StockMovement;
 use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
@@ -33,6 +35,17 @@ class ReportController extends Controller
                 'total_stock_quantity' => WarehouseStock::query()->sum('quantity'),
                 'out_of_stock_items' => WarehouseStock::query()
                     ->where('quantity', '<=', 0)
+                    ->count(),
+
+                'stock_movements' => StockMovement::query()->count(),
+                'receive_movements' => StockMovement::query()
+                    ->where('movement_type', StockMovementType::RECEIVE)
+                    ->count(),
+                'adjustment_movements' => StockMovement::query()
+                    ->whereIn('movement_type', [
+                        StockMovementType::ADJUST_IN,
+                        StockMovementType::ADJUST_OUT,
+                    ])
                     ->count(),
             ],
         ]);
@@ -274,5 +287,121 @@ class ReportController extends Controller
         }
 
         return 'Available';
+    }
+
+    public function stockMovements(Request $request): Response
+    {
+        $stockMovements = $this->stockMovementQuery($request)
+            ->with(['warehouse', 'product.category', 'creator'])
+            ->latest('movement_date')
+            ->paginate(15)
+            ->withQueryString();
+
+        $warehouses = Warehouse::query()
+            ->orderBy('name')
+            ->get(['id', 'code', 'name']);
+
+        return Inertia::render('Reports/StockMovements', [
+            'stockMovements' => $stockMovements,
+            'warehouses' => $warehouses,
+            'movementTypes' => StockMovementType::labels(),
+            'filters' => [
+                'search' => $request->input('search'),
+                'warehouse_id' => $request->input('warehouse_id'),
+                'movement_type' => $request->input('movement_type'),
+                'date_from' => $request->input('date_from'),
+                'date_to' => $request->input('date_to'),
+            ]
+        ]);
+    }
+
+    public function exportStockMovements(Request $request): StreamedResponse
+    {
+        $stockMovements = $this->stockMovementQuery($request)
+            ->with(['warehouse', 'product.category', 'creator'])
+            ->latest('movement_date')
+            ->get();
+
+        $filename = 'stock-movement-report-'.now()->format('Ymd_His').'.csv';
+
+        return response()->streamDownload(function () use ($stockMovements) {
+           $handle = fopen('php://output', 'w');
+           
+           fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+           fputcsv($handle, [
+                'Movement Date',
+                'Warehouse Code',
+                'Warehouse Name',
+                'SKU',
+                'Product Name',
+                'Category',
+                'Movement Type',
+                'Quantity Before',
+                'Quantity Changed',
+                'Quantity After',
+                'Reference Type',
+                'Reference ID',
+                'Created By',
+                'Note',
+                'Created At',
+           ]);
+
+           foreach ($stockMovements as $stockMovement) {
+                fputcsv($handle, [
+                    optional($stockMovement->movement_date)->format('Y-m-d H:i:s'),
+                    $stockMovement->warehouse?->code,
+                    $stockMovement->warehouse?->name,
+                    $stockMovement->product?->sku,
+                    $stockMovement->product?->name,
+                    $stockMovement->product?->category?->name,
+                    $stockMovement->movement_type,
+                    $stockMovement->quantity_before,
+                    $stockMovement->quantity_changed,
+                    $stockMovement->quantity_after,
+                    class_basename($stockMovement->reference_type),
+                    $stockMovement->reference_id,
+                    $stockMovement->creator?->name,
+                    $stockMovement->note,
+                    optional($stockMovement->created_at)->format('Y-m-d H:i:s'),
+                ]);
+           }
+
+           fclose($handle);
+        }, $filename, [
+            'Content-type' => 'text/csv; charset=UTF-8'
+        ]);
+    }
+
+    private function stockMovementQuery(Request $request)
+    {
+        $search = $request->input('search');
+        $warehouseId = $request->input('warehouse_id');
+        $movementType = $request->input('movement_type');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+
+        return StockMovement::query()
+            ->when($search, function ($query, string $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->whereHas('product', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%");
+                    })
+                        ->orWhere('note', 'like', "%{$search}%");
+                });
+            })
+            ->when($warehouseId, function ($query, string $warehouseId) {
+                $query->where('warehouse_id', $warehouseId);
+            })
+            ->when($movementType, function ($query, string $movementType) {
+                $query->where('movement_type', $movementType);        
+            })
+            ->when($dateFrom, function ($query, string $dateFrom) {
+                $query->whereDate('movement_date', '>=', $dateFrom);
+            })
+            ->when($dateTo, function ($query, string $dateTo) {
+                $query->whereDate('movement_date', '<=', $dateTo);
+            });
     }
 }
