@@ -1,4 +1,5 @@
 <script setup>
+import { usePermissions } from "@/Composables/usePermissions";
 import { Link, usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 
@@ -17,7 +18,7 @@ const navigationItems = [
         label: "Users",
         href: "/users",
         activePattern: "/users",
-        permissions: "user.manage",
+        permission: "user.manage",
     },
     {
         label: "Product Categories",
@@ -88,12 +89,8 @@ const isActive = (pattern) => {
 };
 
 const flash = computed(() => page.props.flash ?? {});
-const roles = computed(() => page.props.auth?.roles ?? []);
-const permissions = computed(() => page.props.auth?.permissions ?? []);
 
-const can = (permission) => {
-    return permissions.value.includes(permission);
-};
+const { roles, can } = usePermissions();
 
 const filteredNavigationItems = computed(() => {
     return navigationItems.filter((item) => {
@@ -182,7 +179,11 @@ const filteredNavigationItems = computed(() => {
                                 <div
                                     class="mt-1 text-xs font-semibold text-indigo-300"
                                 >
-                                    {{ roles.join(", ") || "No role" }}
+                                    {{
+                                        roles.length > 0
+                                            ? roles.join(", ")
+                                            : "No role"
+                                    }}
                                 </div>
                             </div>
 
