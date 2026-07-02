@@ -98,8 +98,12 @@ defineProps({
                     </div>
                 </Link>
 
-                <div
+                <!-- <div
                     class="rounded-2xl bg-white p-6 opacity-60 shadow-sm ring-1 ring-slate-200"
+                > -->
+                <Link
+                    href="/reports/stock-balances"
+                    class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-sm font-black text-emerald-600"
@@ -112,14 +116,15 @@ defineProps({
                     </h2>
 
                     <p class="mt-2 text-sm leading-6 text-slate-500">
-                        Coming next: warehouse stock balance, low stock, and out
-                        of stock export.
+                        View warehouse stock balance, low stock, out of stock
+                        items, and export results as CSV.
                     </p>
 
-                    <div class="mt-5 text-sm font-semibold text-slate-400">
-                        Next step
+                    <div class="mt-5 text-sm font-semibold text-emerald-600">
+                        Open Report →
                     </div>
-                </div>
+                </Link>
+                <!-- </div> -->
 
                 <div
                     class="rounded-2xl bg-white p-6 opacity-60 shadow-sm ring-1 ring-slate-200"
