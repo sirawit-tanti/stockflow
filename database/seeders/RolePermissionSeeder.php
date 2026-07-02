@@ -19,6 +19,8 @@ class RolePermissionSeeder extends Seeder
 
             'user.manage',
             'audit-log.view',
+            'report.view',
+            'report.export',
 
             'product-category.manage',
             'product.manage',
@@ -78,6 +80,9 @@ class RolePermissionSeeder extends Seeder
         $purchasing->syncPermissions([
             'dashboard.view',
 
+            'report.view',
+            'report.export',
+
             'supplier.manage',
 
             'purchase-order.view',
@@ -94,6 +99,8 @@ class RolePermissionSeeder extends Seeder
 
         $manager->syncPermissions([
             'dashboard.view',
+            'report.view',
+            'report.export',
 
             'purchase-order.view',
             'purchase-order.approve',
@@ -107,6 +114,8 @@ class RolePermissionSeeder extends Seeder
 
         $warehouse->syncPermissions([
             'dashboard.view',
+            'report.view',
+            'report.export',
 
             'warehouse.manage',
             'warehouse-stock.view',

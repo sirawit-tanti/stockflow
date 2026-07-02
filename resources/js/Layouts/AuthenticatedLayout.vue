@@ -82,9 +82,9 @@ const navigationItems = [
     },
     {
         label: "Reports",
-        href: "#",
+        href: "/reports",
         activePattern: "/reports",
-        // permission: 'dashboard.view',
+        permission: "report.view",
     },
 ];
 

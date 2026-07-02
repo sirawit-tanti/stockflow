@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseOrderActionController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\StockReceiptController;
@@ -28,6 +29,21 @@ Route::get('/dashboard', DashboardController::class)
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::prefix('reports')
+        ->name('reports.')
+        ->middleware('permission:report.view')
+        ->group(function () {
+            Route::get('/', [ReportController::class, 'index'])
+                ->name('index');
+
+            Route::get('purchase-orders', [ReportController::class, 'purchaseOrders'])
+                ->name('purchase-orders');
+
+            Route::get('purchase-orders/export', [ReportController::class, 'exportPurchaseOrders'])
+                ->name('purchase-orders.export')
+                ->middleware('permission:report.export');
+        });
+
     Route::get('users', [UserManagementController::class, 'index'])
         ->name('users.index')
         ->middleware('permission:user.manage');
