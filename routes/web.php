@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
@@ -13,12 +14,11 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\WarehouseStockController;
-use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
-    return auth()->check()
+    return Auth::check()
         ? redirect()->route('dashboard')
         : redirect()->route('login');
 });
@@ -47,6 +47,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('users/{user}', [UserManagementController::class, 'update'])
         ->name('users.update')
         ->middleware('permission:user.manage');
+
+    Route::get('audit-logs', [AuditLogController::class, 'index'])
+        ->name('audit-logs.index')
+        ->middleware('permission:audit-log.view');
+
+    Route::get('audit-logs/{auditLog}', [AuditLogController::class, 'show'])
+        ->name('audit-logs.show')
+        ->middleware('permission:audit-log.view');
 
     Route::resource('product-categories', ProductCategoryController::class)
         ->middleware('permission:product-category.manage');

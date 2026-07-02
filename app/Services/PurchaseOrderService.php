@@ -6,6 +6,7 @@ use App\Enums\PurchaseOrderStatus;
 use App\Models\PurchaseOrder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Services\AuditLogService;
 
 class PurchaseOrderService
 {
@@ -29,6 +30,20 @@ class PurchaseOrderService
                 'total_amount' => $totalAmount,
             ]);
 
+            app(AuditLogService::class)->log(
+                module: 'purchase_orders',
+                action: 'created',
+                auditable: $purchaseOrder,
+                description: "Created purchase order {$purchaseOrder->po_number}.",
+                newValues: [
+                    'po_number' => $purchaseOrder->po_number,
+                    'status' => $purchaseOrder->status,
+                    'total_amount' => $purchaseOrder->total_amount,
+                    'items_count' => $purchaseOrder->items()->count(),
+                ],
+                userId: $userId
+            );
+
             return $purchaseOrder->load(['supplier', 'items.product']);
         });
     }
@@ -49,9 +64,33 @@ class PurchaseOrderService
 
             $totalAmount = $this->syncItems($purchaseOrder, $data['items']);
 
+            $oldValues = [
+                'supplier_id' => $purchaseOrder->supplier_id,
+                'order_date' => $purchaseOrder->order_date,
+                'expected_date' => $purchaseOrder->expected_date,
+                'note' => $purchaseOrder->note,
+                'total_amount' => $purchaseOrder->total_amount,
+            ];
+
             $purchaseOrder->update([
                 'total_amount' => $totalAmount,
             ]);
+
+            app(AuditLogService::class)->log(
+                module: 'purchase_orders',
+                action: 'updated',
+                auditable: $purchaseOrder,
+                description: "Updated purchase order {$purchaseOrder->po_number}.",
+                oldValues: $oldValues,
+                newValues: [
+                    'supplier_id' => $purchaseOrder->supplier_id,
+                    'order_date' => $purchaseOrder->order_date,
+                    'expected_date' => $purchaseOrder->expected_date,
+                    'note' => $purchaseOrder->note,
+                    'total_amount' => $purchaseOrder->total_amount,
+                    'items_count' => $purchaseOrder->items()->count(),
+                ],
+            );
 
             return $purchaseOrder->load(['supplier', 'items.product']);
         });
@@ -62,6 +101,18 @@ class PurchaseOrderService
         $this->ensureDraft($purchaseOrder);
 
         DB::transaction(function () use ($purchaseOrder) {
+            app(AuditLogService::class)->log(
+                module: 'purchase_orders',
+                action: 'deleted',
+                auditable: $purchaseOrder,
+                description: "Deleted purchase order {$purchaseOrder->po_number}.",
+                oldValues: [
+                    'po_number' => $purchaseOrder->po_number,
+                    'status' => $purchaseOrder->status,
+                    'total_amount' => $purchaseOrder->total_amount,
+                ],
+            );
+            
             $purchaseOrder->items()->delete();
             $purchaseOrder->delete();
         });
@@ -83,6 +134,20 @@ class PurchaseOrderService
                 'submitted_at' => now(),
             ]);
 
+            app(AuditLogService::class)->log(
+                module: 'purchase_orders',
+                action: 'submitted',
+                auditable: $purchaseOrder,
+                description: "Submitted purchase order {$purchaseOrder->po_number} for approval.",
+                oldValues: [
+                    'status' => PurchaseOrderStatus::DRAFT,
+                ],
+                newValues: [
+                    'status' => PurchaseOrderStatus::PENDING_APPROVAL,
+                    'submitted_at' => $purchaseOrder->submitted_at,
+                ],
+            );
+
             return $purchaseOrder->refresh();
         });
     }
@@ -99,6 +164,22 @@ class PurchaseOrderService
                 'rejected_at' => null,
             ]);
 
+            app(AuditLogService::class)->log(
+                module: 'purchase_orders',
+                action: 'approved',
+                auditable: $purchaseOrder,
+                description: "Approved purchase order {$purchaseOrder->po_number}.",
+                oldValues: [
+                    'status' => PurchaseOrderStatus::PENDING_APPROVAL,
+                ],
+                newValues: [
+                    'status' => PurchaseOrderStatus::APPROVED,
+                    'approved_by' => $userId,
+                    'approved_at' => $purchaseOrder->approved_at,
+                ],
+                userId: $userId
+            );
+
             return $purchaseOrder->refresh();
         });
     }
@@ -114,6 +195,20 @@ class PurchaseOrderService
                 'approved_at' => null,
                 'rejected_at' => now(),
             ]);
+
+            app(AuditLogService::class)->log(
+                module: 'purchase_orders',
+                action: 'rejected',
+                auditable: $purchaseOrder,
+                description: "Rejected purchase order {$purchaseOrder->po_number}.",
+                oldValues: [
+                    'status' => PurchaseOrderStatus::PENDING_APPROVAL,
+                ],
+                newValues: [
+                    'status' => PurchaseOrderStatus::REJECTED,
+                    'rejected_at' => $purchaseOrder->rejected_at,
+                ],
+            );
 
             return $purchaseOrder->refresh();
         });
@@ -134,6 +229,16 @@ class PurchaseOrderService
             $purchaseOrder->update([
                 'status' => PurchaseOrderStatus::CANCELLED,
             ]);
+
+            app(AuditLogService::class)->log(
+                module: 'purchase_orders',
+                action: 'cancelled',
+                auditable: $purchaseOrder,
+                description: "Cancelled purchase order {$purchaseOrder->po_number}.",
+                newValues: [
+                    'status' => PurchaseOrderStatus::CANCELLED,
+                ],
+            );
 
             return $purchaseOrder->refresh();
         });

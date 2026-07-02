@@ -18,6 +18,7 @@ class RolePermissionSeeder extends Seeder
             'dashboard.view',
 
             'user.manage',
+            'audit-log.view',
 
             'product-category.manage',
             'product.manage',

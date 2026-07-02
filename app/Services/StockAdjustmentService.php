@@ -8,6 +8,7 @@ use App\Models\StockMovement;
 use App\Models\WarehouseStock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Services\AuditLogService;
 
 class StockAdjustmentService
 {
@@ -51,6 +52,21 @@ class StockAdjustmentService
                     userId: $userId,
                 );
             }
+
+            app(AuditLogService::class)->log(
+                module: 'stock_adjustments',
+                action: 'created',
+                auditable: $stockAdjustment,
+                description: "Created stock adjustment {$stockAdjustment->adjustment_number}.",
+                newValues: [
+                    'adjustment_number' => $stockAdjustment->adjustment_number,
+                    'warehouse_id' => $stockAdjustment->warehouse_id,
+                    'adjustment_type' => $stockAdjustment->adjustment_type,
+                    'reason' => $stockAdjustment->reason,
+                    'items_count' => $stockAdjustment->items()->count(),
+                ],
+                userId: $userId
+            );
 
             return $stockAdjustment->load([
                 'warehouse',

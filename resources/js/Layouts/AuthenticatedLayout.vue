@@ -21,6 +21,12 @@ const navigationItems = [
         permission: "user.manage",
     },
     {
+        label: "Audit Logs",
+        href: "/audit-logs",
+        activePattern: "/audit-logs",
+        permission: "audit-log.view",
+    },
+    {
         label: "Product Categories",
         href: "/product-categories",
         activePattern: "/product-categories",

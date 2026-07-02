@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
+use App\Services\AuditLogService;
 
 class UserManagementController extends Controller
 {
@@ -65,6 +66,18 @@ class UserManagementController extends Controller
 
         $user->syncRoles($data['roles']);
 
+        app(AuditLogService::class)->log(
+            module: 'users',
+            action: 'created',
+            auditable: $user,
+            description: "Created user {$user->email}.",
+            newValues: [
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $data['roles'],
+            ],
+        );
+
         return redirect()
             ->route('users.index')
             ->with('success', 'User created successfully.');
@@ -93,8 +106,28 @@ class UserManagementController extends Controller
             $updateData['password'] = Hash::make($data['password']);
         }
 
+        $oldValues = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $user->getRoleNames()->values()->all(),
+        ];
+
         $user->update($updateData);
         $user->syncRoles($data['roles']);
+
+        app(AuditLogService::class)->log(
+            module: 'users',
+            action: 'updated',
+            auditable: $user,
+            description: "Updated user {$user->email}.",
+            oldValues: $oldValues,
+            newValues: [
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->getRoleNames()->values()->all(),
+                'password_changed' => ! empty($data['password']),
+            ],
+        );
 
         return redirect()
             ->route('users.index')

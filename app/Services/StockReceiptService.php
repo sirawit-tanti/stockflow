@@ -10,6 +10,7 @@ use App\Models\StockReceipt;
 use App\Models\WarehouseStock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Services\AuditLogService;
 
 class StockReceiptService
 {
@@ -84,6 +85,20 @@ class StockReceiptService
             }
 
             $this->updatePurchaseOrderStatus($purchaseOrder);
+
+            app(AuditLogService::class)->log(
+                module: 'stock_receipts',
+                action: 'received',
+                auditable: $stockReceipt,
+                description: "Received stock from purchase order {$purchaseOrder->po_number}.",
+                newValues: [
+                    'receipt_number' => $stockReceipt->receipt_number,
+                    'purchase_order_id' => $purchaseOrder->id,
+                    'warehouse_id' => $stockReceipt->warehouse_id,
+                    'items_count' => $stockReceipt->items()->count(),
+                ],
+                userId: $userId
+            );
 
             return $stockReceipt->load([
                 'purchaseOrder.supplier',
