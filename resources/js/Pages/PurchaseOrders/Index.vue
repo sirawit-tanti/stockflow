@@ -1,7 +1,15 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link, router } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+
+const page = usePage();
+
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+
+const can = (permission) => {
+    return permissions.value.includes(permission);
+};
 
 const props = defineProps({
     purchaseOrders: {
@@ -158,6 +166,7 @@ const rejectPurchaseOrder = (purchaseOrder) => {
                 </div>
 
                 <Link
+                    v-if="can('purchase-order.create')"
                     href="/purchase-orders/create"
                     class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
@@ -353,7 +362,9 @@ const rejectPurchaseOrder = (purchaseOrder) => {
 
                                         <Link
                                             v-if="
-                                                purchaseOrder.status === 'DRAFT'
+                                                purchaseOrder.status ===
+                                                    'DRAFT' &&
+                                                can('purchase-order.edit')
                                             "
                                             :href="`/purchase-orders/${purchaseOrder.id}/edit`"
                                             class="rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-50"
@@ -363,7 +374,9 @@ const rejectPurchaseOrder = (purchaseOrder) => {
 
                                         <button
                                             v-if="
-                                                purchaseOrder.status === 'DRAFT'
+                                                purchaseOrder.status ===
+                                                    'DRAFT' &&
+                                                can('purchase-order.submit')
                                             "
                                             type="button"
                                             class="rounded-lg border border-indigo-200 px-3 py-1.5 font-medium text-indigo-700 transition hover:bg-indigo-50"
@@ -379,7 +392,8 @@ const rejectPurchaseOrder = (purchaseOrder) => {
                                         <button
                                             v-if="
                                                 purchaseOrder.status ===
-                                                'PENDING_APPROVAL'
+                                                    'PENDING_APPROVAL' &&
+                                                can('purchase-order.approve')
                                             "
                                             type="button"
                                             class="rounded-lg border border-emerald-200 px-3 py-1.5 font-medium text-emerald-700 transition hover:bg-emerald-50"
@@ -395,7 +409,8 @@ const rejectPurchaseOrder = (purchaseOrder) => {
                                         <button
                                             v-if="
                                                 purchaseOrder.status ===
-                                                'PENDING_APPROVAL'
+                                                    'PENDING_APPROVAL' &&
+                                                can('purchase-order.reject')
                                             "
                                             type="button"
                                             class="rounded-lg border border-red-200 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-50"
@@ -410,7 +425,9 @@ const rejectPurchaseOrder = (purchaseOrder) => {
 
                                         <button
                                             v-if="
-                                                purchaseOrder.status === 'DRAFT'
+                                                purchaseOrder.status ===
+                                                    'DRAFT' &&
+                                                can('purchase-order.delete')
                                             "
                                             type="button"
                                             class="rounded-lg border border-red-200 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-50"

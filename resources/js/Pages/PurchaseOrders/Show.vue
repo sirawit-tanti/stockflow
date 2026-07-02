@@ -1,6 +1,15 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link, router } from "@inertiajs/vue3";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
+import { computed } from "vue";
+
+const page = usePage();
+
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+
+const can = (permission) => {
+    return permissions.value.includes(permission);
+};
 
 defineProps({
     purchaseOrder: {
@@ -188,15 +197,10 @@ const workflowSteps = (purchaseOrder) => {
                     </Link>
 
                     <Link
-                        v-if="['APPROVED', 'PARTIALLY_RECEIVED'].includes(purchaseOrder.status)"
-                        :href="`/purchase-orders/${purchaseOrder.id}/receive`"
-                        class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-                    >
-                        Receive Stock
-                    </Link>
-
-                    <Link
-                        v-if="purchaseOrder.status === 'DRAFT'"
+                        v-if="
+                            purchaseOrder.status === 'DRAFT' &&
+                            can('purchase-order.edit')
+                        "
                         :href="`/purchase-orders/${purchaseOrder.id}/edit`"
                         class="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                     >
@@ -204,7 +208,10 @@ const workflowSteps = (purchaseOrder) => {
                     </Link>
 
                     <button
-                        v-if="purchaseOrder.status === 'DRAFT'"
+                        v-if="
+                            purchaseOrder.status === 'DRAFT' &&
+                            can('purchase-order.submit')
+                        "
                         type="button"
                         class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500"
                         @click="submitPurchaseOrder(purchaseOrder)"
@@ -213,7 +220,10 @@ const workflowSteps = (purchaseOrder) => {
                     </button>
 
                     <button
-                        v-if="purchaseOrder.status === 'PENDING_APPROVAL'"
+                        v-if="
+                            purchaseOrder.status === 'PENDING_APPROVAL' &&
+                            can('purchase-order.approve')
+                        "
                         type="button"
                         class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
                         @click="approvePurchaseOrder(purchaseOrder)"
@@ -222,7 +232,10 @@ const workflowSteps = (purchaseOrder) => {
                     </button>
 
                     <button
-                        v-if="purchaseOrder.status === 'PENDING_APPROVAL'"
+                        v-if="
+                            purchaseOrder.status === 'PENDING_APPROVAL' &&
+                            can('purchase-order.reject')
+                        "
                         type="button"
                         class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500"
                         @click="rejectPurchaseOrder(purchaseOrder)"
@@ -234,7 +247,7 @@ const workflowSteps = (purchaseOrder) => {
                         v-if="
                             ['DRAFT', 'PENDING_APPROVAL'].includes(
                                 purchaseOrder.status,
-                            )
+                            ) && can('purchase-order.cancel')
                         "
                         type="button"
                         class="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50"
@@ -242,6 +255,18 @@ const workflowSteps = (purchaseOrder) => {
                     >
                         Cancel PO
                     </button>
+
+                    <Link
+                        v-if="
+                            ['APPROVED', 'PARTIALLY_RECEIVED'].includes(
+                                purchaseOrder.status,
+                            ) && can('stock-receipt.create')
+                        "
+                        :href="`/purchase-orders/${purchaseOrder.id}/receive`"
+                        class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                    >
+                        Receive Stock
+                    </Link>
                 </div>
             </section>
 

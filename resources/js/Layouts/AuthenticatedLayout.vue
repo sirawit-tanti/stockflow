@@ -11,56 +11,67 @@ const navigationItems = [
         label: "Dashboard",
         href: "/dashboard",
         activePattern: "/dashboard",
+        permission: "dashboard.view",
     },
     {
         label: "Product Categories",
         href: "/product-categories",
         activePattern: "/product-categories",
+        permission: "product-category.manage",
     },
     {
         label: "Products",
         href: "/products",
         activePattern: "/products",
+        permission: "product.manage",
     },
     {
         label: "Suppliers",
         href: "/suppliers",
         activePattern: "/suppliers",
+        permission: "supplier.manage",
     },
     {
         label: "Warehouses",
         href: "/warehouses",
         activePattern: "/warehouses",
+        permission: "warehouse.manage",
     },
     {
         label: "Stock Balance",
         href: "/warehouse-stocks",
         activePattern: "/warehouse-stocks",
+        permission: "warehouse-stock.view",
     },
     {
         label: "Purchase Orders",
         href: "/purchase-orders",
         activePattern: "/purchase-orders",
+        permission: "purchase-order.view",
     },
     {
         label: "Stock Receipts",
         href: "/stock-receipts",
         activePattern: "/stock-receipts",
+        permission: "stock-receipt.view",
     },
     {
         label: "Stock Movements",
         href: "/stock-movements",
         activePattern: "/stock-movements",
+        permission: "stock-movement.view",
     },
     {
         label: "Stock Adjustments",
         href: "/stock-adjustments",
         activePattern: "/stock-adjustments",
+        permission: "stock-adjustment.view",
     },
     {
         label: "Reports",
         href: "#",
         activePattern: "/reports",
+        // permission: 'dashboard.view',
     },
 ];
 
@@ -71,6 +82,18 @@ const isActive = (pattern) => {
 };
 
 const flash = computed(() => page.props.flash ?? {});
+const roles = computed(() => page.props.auth?.roles ?? []);
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+
+const can = (permission) => {
+    return permissions.value.includes(permission);
+};
+
+const filteredNavigationItems = computed(() => {
+    return navigationItems.filter((item) => {
+        return !item.permission || can(item.permission);
+    });
+});
 </script>
 
 <template>
@@ -93,7 +116,10 @@ const flash = computed(() => page.props.flash ?? {});
                 </div>
 
                 <nav class="space-y-1 px-4 py-6">
-                    <template v-for="item in navigationItems" :key="item.label">
+                    <template
+                        v-for="item in filteredNavigationItems"
+                        :key="item.label"
+                    >
                         <Link
                             v-if="item.href !== '#'"
                             :href="item.href"
@@ -146,6 +172,11 @@ const flash = computed(() => page.props.flash ?? {});
                                 </div>
                                 <div class="text-xs text-slate-500">
                                     {{ user.email }}
+                                </div>
+                                <div
+                                    class="mt-1 text-xs font-semibold text-indigo-300"
+                                >
+                                    {{ roles.join(", ") || "No role" }}
                                 </div>
                             </div>
 

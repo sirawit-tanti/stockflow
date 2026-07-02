@@ -25,31 +25,118 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)
+    ->middleware(['auth', 'verified', 'permission:dashboard.view'])
+    ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('product-categories', ProductCategoryController::class);
-    Route::resource('products', ProductController::class);
-    Route::resource('suppliers', SupplierController::class);
-    Route::resource('warehouses', WarehouseController::class);
+    Route::resource('product-categories', ProductCategoryController::class)
+        ->middleware('permission:product-category.manage');
 
-    Route::get('stock-receipts', [StockReceiptController::class, 'index'])->name('stock-receipts.index');
-    Route::get('stock-receipts/{stockReceipt}', [StockReceiptController::class, 'show'])->name('stock-receipts.show');
-    Route::post('purchase-orders/{purchaseOrder}/submit', [PurchaseOrderActionController::class, 'submit'])->name('purchase-orders.submit');
-    Route::post('purchase-orders/{purchaseOrder}/approve', [PurchaseOrderActionController::class, 'approve'])->name('purchase-orders.approve');
-    Route::post('purchase-orders/{purchaseOrder}/reject', [PurchaseOrderActionController::class, 'reject'])->name('purchase-orders.reject');
-    Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderActionController::class, 'cancel'])->name('purchase-orders.cancel');
-    Route::get('purchase-orders/{purchaseOrder}/receive', [StockReceiptController::class, 'create'])->name('purchase-orders.receive.create');
-    Route::post('purchase-orders/{purchaseOrder}/receive', [StockReceiptController::class, 'store'])->name('purchase-orders.receive.store');
-    Route::resource('purchase-orders', PurchaseOrderController::class);
-    Route::get('stock-movements', [StockMovementController::class, 'index'])->name('stock-movements.index');
-    Route::get('stock-movements/{stockMovement}', [StockMovementController::class, 'show'])->name('stock-movements.show');
-    Route::get('warehouse-stocks', [WarehouseStockController::class, 'index'])->name('warehouse-stocks.index');
-    Route::post('warehouse-stocks/sync', [WarehouseStockController::class, 'sync'])->name('warehouse-stocks.sync');
-    Route::get('stock-adjustments', [StockAdjustmentController::class, 'index'])->name('stock-adjustments.index');
-    Route::get('stock-adjustments/create', [StockAdjustmentController::class, 'create'])->name('stock-adjustments.create');
-    Route::post('stock-adjustments', [StockAdjustmentController::class, 'store'])->name('stock-adjustments.store');
-    Route::get('stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'show'])->name('stock-adjustments.show');
+    Route::resource('products', ProductController::class)
+        ->middleware('permission:product.manage');
+
+    Route::resource('suppliers', SupplierController::class)
+        ->middleware('permission:supplier.manage');
+
+    Route::resource('warehouses', WarehouseController::class)
+        ->middleware('permission:warehouse.manage');
+
+    Route::get('warehouse-stocks', [WarehouseStockController::class, 'index'])
+        ->name('warehouse-stocks.index')
+        ->middleware('permission:warehouse-stock.view');
+
+    Route::post('warehouse-stocks/sync', [WarehouseStockController::class, 'sync'])
+        ->name('warehouse-stocks.sync')
+        ->middleware('permission:warehouse-stock.sync');
+
+    Route::post('purchase-orders/{purchaseOrder}/submit', [PurchaseOrderActionController::class, 'submit'])
+        ->name('purchase-orders.submit')
+        ->middleware('permission:purchase-order.submit');
+
+    Route::post('purchase-orders/{purchaseOrder}/approve', [PurchaseOrderActionController::class, 'approve'])
+        ->name('purchase-orders.approve')
+        ->middleware('permission:purchase-order.approve');
+
+    Route::post('purchase-orders/{purchaseOrder}/reject', [PurchaseOrderActionController::class, 'reject'])
+        ->name('purchase-orders.reject')
+        ->middleware('permission:purchase-order.reject');
+
+    Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderActionController::class, 'cancel'])
+        ->name('purchase-orders.cancel')
+        ->middleware('permission:purchase-order.cancel');
+
+    Route::get('purchase-orders/create', [PurchaseOrderController::class, 'create'])
+        ->name('purchase-orders.create')
+        ->middleware('permission:purchase-order.create');
+
+    Route::post('purchase-orders', [PurchaseOrderController::class, 'store'])
+        ->name('purchase-orders.store')
+        ->middleware('permission:purchase-order.create');
+
+    Route::get('purchase-orders/{purchaseOrder}/edit', [PurchaseOrderController::class, 'edit'])
+        ->name('purchase-orders.edit')
+        ->middleware('permission:purchase-order.edit');
+
+    Route::put('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'update'])
+        ->name('purchase-orders.update')
+        ->middleware('permission:purchase-order.edit');
+
+    Route::patch('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'update'])
+        ->name('purchase-orders.update')
+        ->middleware('permission:purchase-order.edit');
+
+    Route::delete('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])
+        ->name('purchase-orders.destroy')
+        ->middleware('permission:purchase-order.delete');
+
+    Route::get('purchase-orders', [PurchaseOrderController::class, 'index'])
+        ->name('purchase-orders.index')
+        ->middleware('permission:purchase-order.view');
+
+    Route::get('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])
+        ->name('purchase-orders.show')
+        ->middleware('permission:purchase-order.view');
+
+    Route::get('stock-receipts', [StockReceiptController::class, 'index'])
+        ->name('stock-receipts.index')
+        ->middleware('permission:stock-receipt.view');
+
+    Route::get('stock-receipts/{stockReceipt}', [StockReceiptController::class, 'show'])
+        ->name('stock-receipts.show')
+        ->middleware('permission:stock-receipt.view');
+
+    Route::get('purchase-orders/{purchaseOrder}/receive', [StockReceiptController::class, 'create'])
+        ->name('purchase-orders.receive.create')
+        ->middleware('permission:stock-receipt.create');
+
+    Route::post('purchase-orders/{purchaseOrder}/receive', [StockReceiptController::class, 'store'])
+        ->name('purchase-orders.receive.store')
+        ->middleware('permission:stock-receipt.create');
+
+    Route::get('stock-movements', [StockMovementController::class, 'index'])
+        ->name('stock-movements.index')
+        ->middleware('permission:stock-movement.view');
+
+    Route::get('stock-movements/{stockMovement}', [StockMovementController::class, 'show'])
+        ->name('stock-movements.show')
+        ->middleware('permission:stock-movement.view');
+
+    Route::get('stock-adjustments', [StockAdjustmentController::class, 'index'])
+        ->name('stock-adjustments.index')
+        ->middleware('permission:stock-adjustment.view');
+
+    Route::get('stock-adjustments/create', [StockAdjustmentController::class, 'create'])
+        ->name('stock-adjustments.create')
+        ->middleware('permission:stock-adjustment.create');
+
+    Route::post('stock-adjustments', [StockAdjustmentController::class, 'store'])
+        ->name('stock-adjustments.store')
+        ->middleware('permission:stock-adjustment.create');
+
+    Route::get('stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'show'])
+        ->name('stock-adjustments.show')
+        ->middleware('permission:stock-adjustment.view');
 });
 
 Route::middleware('auth')->group(function () {

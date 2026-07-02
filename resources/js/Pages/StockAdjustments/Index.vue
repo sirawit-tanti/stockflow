@@ -1,7 +1,15 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link, router } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+
+const page = usePage();
+
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+
+const can = (permission) => {
+    return permissions.value.includes(permission);
+};
 
 const props = defineProps({
     stockAdjustments: {
@@ -107,6 +115,7 @@ const adjustmentTypeClass = (type) => {
                 </div>
 
                 <Link
+                    v-if="can('stock-adjustment.create')"
                     href="/stock-adjustments/create"
                     class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
