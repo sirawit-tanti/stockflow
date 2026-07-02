@@ -10,6 +10,7 @@ use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\StockReceiptController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\WarehouseStockController;
 use Illuminate\Foundation\Application;
@@ -30,6 +31,26 @@ Route::get('/dashboard', DashboardController::class)
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('users', [UserManagementController::class, 'index'])
+        ->name('users.index')
+        ->middleware('permission:user.manage');
+
+    Route::get('users/create', [UserManagementController::class, 'create'])
+        ->name('users.create')
+        ->middleware('permission:user.manage');
+
+    Route::post('users', [UserManagementController::class, 'store'])
+        ->name('users.store')
+        ->middleware('permission:user.manage');
+
+    Route::get('users/{user}/edit', [UserManagementController::class, 'edit'])
+        ->name('users.edit')
+        ->middleware('permission:user.manage');
+
+    Route::put('users/{user}', [UserManagementController::class, 'update'])
+        ->name('users.update')
+        ->middleware('permission:user.manage');
+
     Route::resource('product-categories', ProductCategoryController::class)
         ->middleware('permission:product-category.manage');
 

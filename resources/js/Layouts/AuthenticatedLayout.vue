@@ -14,6 +14,12 @@ const navigationItems = [
         permission: "dashboard.view",
     },
     {
+        label: "Users",
+        href: "/users",
+        activePattern: "/users",
+        permissions: "user.manage",
+    },
+    {
         label: "Product Categories",
         href: "/product-categories",
         activePattern: "/product-categories",

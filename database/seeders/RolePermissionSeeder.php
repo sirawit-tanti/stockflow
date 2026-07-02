@@ -17,6 +17,8 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             'dashboard.view',
 
+            'user.manage',
+
             'product-category.manage',
             'product.manage',
             'supplier.manage',
